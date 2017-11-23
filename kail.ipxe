@@ -1,0 +1,6 @@
+#!ipxe
+
+kernel http://${next-server}/system/kail/live/vmlinuz boot=live username=root hostname=kail root=/dev/nfs initrd=initrd.img nfsroot=${next-server}:/zpool/html/system/kail
+initrd http://${next-server}/system/kail/live/initrd.img
+boot
+ 

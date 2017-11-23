@@ -1,0 +1,6 @@
+#!ipxe
+
+kernel http://${next-server}/system/drbl/live/vmlinuz  initrd=initrd.img boot=live union=overlay config components noswap nolocales edd=on nomodeset vga=normal nosplash fetch=http://${next-server}/system/drbl/live/filesystem.squashfs
+initrd http://${next-server}/system/drbl/live/initrd.img
+boot
+ 

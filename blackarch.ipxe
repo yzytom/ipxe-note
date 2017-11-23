@@ -1,0 +1,7 @@
+#!ipxe
+
+kernel http://${next-server}/system/blackarch/blackarch/boot/x86_64/vmlinuz
+initrd http://${next-server}/system/blackarch/blackarch/boot/x86_64/archiso.img
+imgargs vmlinuz archisobasedir=blackarch archiso_nfs_srv=${next-server}:/zpool/html/system/blackarch/ ip=dhcp
+boot
+

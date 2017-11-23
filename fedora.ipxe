@@ -1,0 +1,9 @@
+#!ipxe
+
+#kernel http://${next-server}/system/fedora/isolinux/vmlinuz initrd=initrd.img repo=http://${next-server}/system/fedora/
+#initrd http://${next-server}/system/fedora/isolinux/initrd.img
+kernel http://${next-server}/system/fedorakde/isolinux/vmlinuz initrd=initrd.img root=live:http://${next-server}/system/fedorakde/LiveOS/squashfs.img ro rd.live.image rd.luks=0 rd.md=0 rd.dm=0
+initrd http://${next-server}/system/fedorakde/isolinux/initrd.img
+boot
+
+

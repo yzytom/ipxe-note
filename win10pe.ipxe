@@ -1,0 +1,105 @@
+#!ipxe
+   set menu-timeout 10000
+   iseq ${platform} efi && set menu-default win64 || set menu-default win32
+   set xieyi:string http
+   set pever:string 15063
+   isset ${ip} || dhcp
+:start
+  menu iPXE Boot Menu --${platform}--${ip}
+  item --gap --             --------------------------------- PE --------------------------------
+  item 
+  item win32                Windows10 PE x86
+  item 
+  item win64                Windows10 PE x64 
+  item 
+  item --gap --             -------------------------------- TOOL --------------------------------
+  item
+  item winmem               Windows Memmory Diagnostic
+  item memtest              Memtest86+ 5.01  ---- online
+  item test                 ${xieyi} ----  select change of protocol 
+  item peversion			${pever} ----  select change of pe version
+  item
+  item --gap --             ---------------------------- Advanced options -----------------------
+  item
+  item msboot               Enter Windows Boot Manager Menu £¨BIOS)
+  item --key c config       Configure settings                                   -- c
+  item shell                Drop to iPXE shell
+  item reboot               Reboot computer
+  item --key h local        Boot from local drive                                -- h
+  item --key x exit         Exit iPXE and continue BIOS boot                     -- x
+  choose --timeout ${menu-timeout} --default ${menu-default} selected
+  goto ${selected}
+
+:local
+  sanboot --no-describe --drive 0x80
+
+:shell
+  echo Type 'exit' to get the back to the menu
+  shell
+  goto start
+ 
+:reboot
+  reboot
+ 
+:exit
+  exit
+
+:config
+  config
+  goto start
+
+:msboot 
+  chain tftp://${next-server}/system/win10pe/pxeboot.n12
+  goto start
+
+:test
+   iseq ${xieyi} tftp && set xieyi http && goto start ||
+   iseq ${xieyi} http && set xieyi tftp && goto start ||
+
+:peversion
+	iseq ${pever} 14393 && set pever 15063 && goto start ||
+	iseq ${pever} 15063 && set pever 14393 && goto start ||
+	
+:memtest
+  chain http://boot.ipxe.org/memtest.0 || goto retry
+  goto start
+
+:winmem
+  kernel ${xieyi}://${next-server}/system/win10pe/wimboot || goto retry
+  initrd ${xieyi}://${next-server}/system/win10pe/bootmgr.exe     bootmgr.exe || goto retry
+  initrd ${xieyi}://${next-server}/system/win10pe/boot/bme    BXD  || goto retry
+  initrd ${xieyi}://${next-server}/system/win10pe/boot/Fonts/segmono_boot.ttf  segmono_boot.ttf || goto retry
+  initrd ${xieyi}://${next-server}/system/win10pe/boot/Fonts/wgl4_boot.ttf     wgl4_boot.ttf || goto retry
+  initrd ${xieyi}://${next-server}/system/win10pe/boot/memtest.exe   memtest.exe || goto retry
+  boot || goto retry
+  goto start
+
+:win32
+  set pefile pe32.wim
+  goto bootpe
+
+:win64
+  set pefile pe64.wim
+  goto bootpe
+
+:winefi
+  initrd ${xieyi}://${next-server}/system/win10pe/efi/boot/bootx64.efi || goto retry
+  initrd ${xieyi}://${next-server}/system/win10pe/boot/bcd  || goto retry
+  initrd -n pe64 ${xieyi}://${next-server}/system/win10pe/boot/${pever}pe64.wim || goto retry
+  boot || goto retry
+  goto start
+
+:bootpe
+  kernel ${xieyi}://${next-server}/system/win10pe/wimboot gui || goto retry
+  initrd ${xieyi}://${next-server}/system/win10pe/boot/boot.sdi   boot.sdi  || goto retry
+  iseq ${platform} pcbios || goto winefi
+  initrd ${xieyi}://${next-server}/system/win10pe/bootmgr.exe bootmgr.exe || goto retry
+  initrd ${xieyi}://${next-server}/system/win10pe/boot/bxe bxd || goto retry
+  initrd -n ${pefile} ${xieyi}://${next-server}/system/win10pe/boot/${pever}${pefile}  boot.wim  || goto retry
+  boot || goto retry
+  goto start
+
+:retry
+  imgfree
+  prompt Error! press any key to retry
+  goto start

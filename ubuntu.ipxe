@@ -1,0 +1,6 @@
+#!ipxe
+kernel http://${next-server}/system/ubuntu/casper/vmlinuz.efi
+initrd http://${next-server}/system/ubuntu/casper/initrd.lz
+imgargs vmlinuz.efi initrd=initrd.lz root=/dev/nfs boot=casper netboot=nfs nfsroot=${next-server}:/zpool/html/system/ubuntu ip=dhcp splash quiet --
+boot
+
